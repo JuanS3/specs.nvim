@@ -74,14 +74,18 @@ function M.show_specs(popup)
   )
 
   local opts_winhl = {
-    winhl = 'Normal:' .. _opts.popup.winhl,
+    value = 'Normal:' .. _opts.popup.winhl,
+    window = win_id,
   }
-  vim.api.nvim_win_set_option_value( win_id, opts_winhl )
+  -- vim.api.nvim_win_set_option_value( win_id, opts_winhl )
+  vim.api.nvim_win_set_option_value( 'winhl', opts_winhl )
 
   local opts_winblend = {
-    winblend = _opts.popup.blend,
+    value = _opts.popup.blend,
+    window = win_id,
   }
-  vim.api.nvim_win_set_option_value( win_id, opts_winblend )
+  -- vim.api.nvim_win_set_option_value( win_id, opts_winblend )
+  vim.api.nvim_win_set_option_value( 'winblend', opts_winblend )
   -- vim.api.nvim_win_set_option(win_id, "winblend", _opts.popup.blend)
 
   local cnt = 0
