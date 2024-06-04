@@ -29,13 +29,13 @@ function M.should_show_specs(start_win_id)
   end
 
   local buftype, filetype, ok
-  ok, buftype = pcall(vim.api.nvim_get_option_value, 0, 'buftype')
+  ok, buftype = pcall(vim.api.nvim_get_option_value, 'buftype', 0)
 
   if ok and opts.ignore_buftypes[buftype] then
     return false
   end
 
-  ok, filetype = pcall(vim.api.nvim_get_option_value, 0, 'filetype')
+  ok, filetype = pcall(vim.api.nvim_get_option_value, 'filetype', 0)
 
   if ok and opts.ignore_filetypes[filetype] then
     return false
@@ -73,20 +73,8 @@ function M.show_specs(popup)
     }
   )
 
-  local opts_winhl = {
-    value = 'Normal:' .. _opts.popup.winhl,
-    window = win_id,
-  }
-  -- vim.api.nvim_win_set_option_value( win_id, opts_winhl )
-  vim.api.nvim_win_set_option_value( 'winhl', opts_winhl )
-
-  local opts_winblend = {
-    value = _opts.popup.blend,
-    window = win_id,
-  }
-  -- vim.api.nvim_win_set_option_value( win_id, opts_winblend )
-  vim.api.nvim_win_set_option_value( 'winblend', opts_winblend )
-  -- vim.api.nvim_win_set_option(win_id, "winblend", _opts.popup.blend)
+  vim.api.nvim_set_option_value( 'winhl', { 'win', win_id }, 'Normal:'.. _opts.popup.winhl )
+  vim.api.nvim_set_option_value( 'winblend', { "win", win_id }, _opts.popup.blend )
 
   local cnt = 0
   local config = vim.api.nvim_win_get_config(win_id)
