@@ -15,11 +15,11 @@ Show where your cursor moves when jumping large distances (e.g between windows).
 ## Install
 Using [packer.nvim](https://github.com/wbthomason/packer.nvim):
 ```lua
-use {'edluffy/specs.nvim'}
+use {'JuanS3/specs.nvim'}
 ```
 Using [vim-plug](https://github.com/junegunn/vim-plug):
 ```vimscript
-Plug 'edluffy/specs.nvim'
+Plug 'JuanS3/specs.nvim'
 ```
 ## Usage
 If you are using init.vim instead of init.lua, remember to wrap block below with `lua << EOF` and `EOF`
