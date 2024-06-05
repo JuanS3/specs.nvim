@@ -117,7 +117,6 @@ function M.show_specs(popup)
 end
 
 --[[ ▁▁▂▂▃▃▄▄▅▅▆▆▇▇██ ]]
---
 
 function M.linear_fader(blend, cnt)
   if blend + cnt <= 100 then
@@ -128,7 +127,6 @@ function M.linear_fader(blend, cnt)
 end
 
 --[[ ⌣/⌢\⌣/⌢\⌣/⌢\⌣/⌢\ ]]
---
 
 function M.sinus_fader(blend, cnt)
   if cnt <= 100 then
@@ -139,7 +137,6 @@ function M.sinus_fader(blend, cnt)
 end
 
 --[[ ▁▁▁▁▂▂▂▃▃▃▄▄▅▆▇ ]]
---
 
 function M.exp_fader(blend, cnt)
   if blend + math.floor(math.exp(cnt / 10)) <= 100 then
@@ -150,7 +147,6 @@ function M.exp_fader(blend, cnt)
 end
 
 --[[ ▁▂▃▄▅▆▇█▇▆▅▄▃▂▁ ]]
---
 
 function M.pulse_fader(blend, cnt)
   if cnt < (100 - blend) / 2 then
@@ -163,14 +159,12 @@ function M.pulse_fader(blend, cnt)
 end
 
 --[[ ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁ ]]
---
 
 function M.empty_fader(_, _)
   return nil
 end
 
 --[[ ░░▒▒▓█████▓▒▒░░ ]]
---
 
 function M.shrink_resizer(width, ccol, cnt)
   if width - cnt > 0 then
@@ -181,7 +175,6 @@ function M.shrink_resizer(width, ccol, cnt)
 end
 
 --[[ ████▓▓▓▒▒▒▒░░░░ ]]
---
 
 function M.slide_resizer(width, ccol, cnt)
   if width - cnt > 0 then
@@ -192,7 +185,6 @@ function M.slide_resizer(width, ccol, cnt)
 end
 
 --[[ ███████████████ ]]
---
 
 function M.empty_resizer(width, ccol, cnt)
   if cnt < 100 then
