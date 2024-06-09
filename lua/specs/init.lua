@@ -1,16 +1,17 @@
 --- @module specs
 --- This module provides functionality for displaying temporary popups based on cursor movement.
-local Specs = {}
 
---- @table opts
+local specs = {}
+local fader = require('specs.faders')
+local resizer = require('specs.resizers')
+
 --- Configuration options for the popup behavior.
 local opts = {}
 
 --- Internal state variables
 local old_cur
-local au_toggle
+local au_toggle = true
 
---- @table DEFAULT_OPTS
 --- Default configuration options for the popup.
 local DEFAULT_OPTS = {
   show_jumps       = true,          --- Show popups when cursor moves a certain distance.
@@ -20,9 +21,9 @@ local DEFAULT_OPTS = {
     inc_ms = 5,                     --- Increment for progressive fade-in (in milliseconds).
     blend = 10,                     --- Blend value for the popup window (0-100).
     width = 20,                     --- Width of the popup window (in characters).
-    winhl = "PMenu",                --- Window highlight group for styling.
-    fader = Specs.exp_fader,        --- Fader function for controlling popup transparency.
-    resizer = Specs.shrink_resizer, --- Resizer function for controlling popup width and position.
+    winhl = 'PMenu',                --- Window highlight group for styling.
+    fader = fader.exp_fader,        --- Fader function for controlling popup transparency.
+    resizer = resizer.shrink_resizer, --- Resizer function for controlling popup width and position.
   },
   ignore_filetypes = {},            --- Filetypes to ignore for popup display (empty table by default).
   --- Buffer types to ignore for popup display.
@@ -31,24 +32,22 @@ local DEFAULT_OPTS = {
   },
 }
 
---- @function Specs.on_cursor_moved()
 --- Handles cursor movement events and triggers popup display if necessary.
-function Specs.on_cursor_moved()
+function specs.on_cursor_moved()
   local cur = vim.fn.winline() + vim.api.nvim_win_get_position(0)[1]
   if old_cur then
     local jump = math.abs(cur - old_cur)
     if jump >= opts.min_jump then
-      Specs.show_specs()
+      specs.show_specs()
     end
   end
   old_cur = cur
 end
 
---- @function Specs.should_show_specs(start_win_id)
 --- Checks if the popup should be displayed based on current context and configuration.
 --- @param start_win_id number ID of the current window
---- @return boolean Returns false if the window is invalid, if a command is being executed, or if the buffer or file type is in the ignored lists
-function Specs.should_show_specs(start_win_id)
+--- @return boolean
+function specs.should_show_specs(start_win_id)
   if not vim.api.nvim_win_is_valid(start_win_id) then
     return false
   end
@@ -77,19 +76,18 @@ function Specs.should_show_specs(start_win_id)
   return true
 end
 
---- @function Specs.show_specs(popup)
 --- Creates and displays the popup window with specified configuration.
 --- @param popup table|nil Optional custom popup settings
-function Specs.show_specs(popup)
+function specs.show_specs(popup)
   local start_win_id = vim.api.nvim_get_current_win()
 
-  if not Specs.should_show_specs(start_win_id) then
+  if not specs.should_show_specs(start_win_id) then
     return
   end
 
   popup = popup or {}
 
-  -- Merge user-provided popup options with defaults.
+  --- Merge user-provided popup options with defaults.
   local _opts = vim.tbl_deep_extend('force', opts, { popup = popup })
 
   local cursor_col = vim.fn.wincol() - 1
@@ -122,8 +120,8 @@ function Specs.show_specs(popup)
         pcall(vim.loop.close, timer)
         pcall(vim.api.nvim_win_close, win_id, true)
 
-        -- Callbacks might stack up before the timer actually gets closed, track that state
-        -- internally here instead
+        --- Callbacks might stack up before the timer actually gets closed, track that state
+        --- internally here instead
         closed = true
       end
       return
@@ -141,7 +139,7 @@ function Specs.show_specs(popup)
         vim.api.nvim_win_set_config(win_id, config)
         vim.api.nvim_win_set_width(win_id, dm[1])
       end
-      if bl == nil and dm == nil then -- Done blending and resizing
+      if bl == nil and dm == nil then --- Done blending and resizing
         vim.loop.close(timer)
         vim.api.nvim_win_close(win_id, true)
       end
@@ -151,144 +149,24 @@ function Specs.show_specs(popup)
 end
 
 
---  _____                                                     _____
--- ( ___ )                                                   ( ___ )
---  |   |~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|   |
---  |   |                                                     |   |
---  |   |    _______ _______ _____  _______ ______ _______    |   |
---  |   |   |    ___|   _   |     \|    ___|   __ \     __|   |   |
---  |   |   |    ___|       |  --  |    ___|      <__     |   |   |
---  |   |   |___|   |___|___|_____/|_______|___|__|_______|   |   |
---  |   |                                                     |   |
---  |   |                                                     |   |
---  |___|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|___|
--- (_____)                                                   (_____)
---- Faders to control the transparency of the popup window
-
---- @function Specs.linear_fader(blend, cnt)
---- Linear fader function for popup transparency.
---- @param blend number Initial blend level
---- @param cnt number Iteration counter
---- @return number|nil New transparency level
-function Specs.linear_fader(blend, cnt)
-  if blend + cnt <= 100 then
-    return cnt
-  end
-end
-
---- @function Specs.sinus_fader(blend, cnt)
---- Sinusoidal fader function for popup transparency.
---- @param blend number Initial blend level
---- @param cnt number Iteration counter
---- @return number|nil New transparency level
-function Specs.sinus_fader(blend, cnt)
-  if cnt <= 100 then
-    return math.ceil((math.sin(cnt * (1 / blend)) * 0.5 + 0.5) * 100)
-  end
-end
-
---- @function Specs.exp_fader(blend, cnt)
---- Exponential fader function for popup transparency.
---- @param blend number Initial blend level
---- @param cnt number Iteration counter
---- @return number|nil New transparency level
-function Specs.exp_fader(blend, cnt)
-  if blend + math.floor(math.exp(cnt / 10)) <= 100 then
-    return blend + math.floor(math.exp(cnt / 10))
-  end
-end
-
---- @function Specs.pulse_fader(blend, cnt)
---- Pulse fader function for popup transparency.
---- @param blend number Initial blend level
---- @param cnt number Iteration counter
---- @return number|nil New transparency level
-function Specs.pulse_fader(blend, cnt)
-  if cnt < (100 - blend) / 2 then
-    return cnt
-  elseif cnt < 100 - blend then
-    return 100 - cnt
-  end
-end
-
---- @function Specs.empty_fader()
---- Empty fader (no effect)
---- @return nil
-function Specs.empty_fader(_, _)
-  return nil
-end
-
-
---  _____                                                                     _____
--- ( ___ )                                                                   ( ___ )
---  |   |~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|   |
---  |   |                                                                     |   |
---  |   |    ______ _______ _______ _______ _______ _______ ______ _______    |   |
---  |   |   |   __ \    ___|     __|_     _|__     |    ___|   __ \     __|   |   |
---  |   |   |      <    ___|__     |_|   |_|     __|    ___|      <__     |   |   |
---  |   |   |___|__|_______|_______|_______|_______|_______|___|__|_______|   |   |
---  |   |                                                                     |   |
---  |   |                                                                     |   |
---  |___|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|___|
--- (_____)                                                                   (_____)
---- Resizers to control the size of the popup window
-
---- @function Specs.shrink_resizer(width, ccol, cnt)
---- Resizer function that shrinks the popup width.
---- @param width number Initial width
---- @param ccol number Cursor column
---- @param cnt number Iteration counter
---- @return table|nil New size and position
-function Specs.shrink_resizer(width, ccol, cnt)
-  if width - cnt > 0 then
-    return { width - cnt, ccol - (width - cnt) / 2 + 1 }
-  end
-end
-
---- @function Specs.slide_resizer(width, ccol, cnt)
---- Resizer function that slides the popup to the left.
---- @param width number Initial width
---- @param ccol number Cursor column
---- @param cnt number Iteration counter
---- @return table|nil New size and position
-function Specs.slide_resizer(width, ccol, cnt)
-  if width - cnt > 0 then
-    return { width - cnt, ccol }
-  end
-end
-
---- @function Specs.empty_resizer(width, ccol, cnt)
---- Empty resizer (no effect)
---- @param width number Initial width
---- @param ccol number Cursor column
---- @param cnt number Iteration counter
---- @return table|nil New size and position
-function Specs.empty_resizer(width, ccol, cnt)
-  if cnt < 100 then
-    return { width, ccol - width / 2 }
-  end
-end
-
-
-
 --- Sets up the module with custom options and creates the necessary autocmds
 --- @param user_opts table Custom options
-function Specs.setup(user_opts)
+function specs.setup(user_opts)
   opts = vim.tbl_deep_extend('force', DEFAULT_OPTS, user_opts)
-  Specs.create_autocmds()
+  specs.create_autocmds()
 end
 
 --- Toggles the activation of the autocmds
-function Specs.toggle()
+function specs.toggle()
   if au_toggle then
-    Specs.clear_autocmds()
+    specs.clear_autocmds()
   else
-    Specs.create_autocmds()
+    specs.create_autocmds()
   end
 end
 
 --- Creates the necessary autocmds
-function Specs.create_autocmds()
+function specs.create_autocmds()
   vim.cmd('augroup Specs')
   vim.cmd('autocmd!')
   if opts.show_jumps then
@@ -299,11 +177,11 @@ function Specs.create_autocmds()
 end
 
 --- Clears the autocmds
-function Specs.clear_autocmds()
+function specs.clear_autocmds()
   vim.cmd('augroup Specs')
   vim.cmd('autocmd!')
   vim.cmd('augroup END')
   au_toggle = false
 end
 
-return Specs
+return specs
