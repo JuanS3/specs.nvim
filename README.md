@@ -21,26 +21,60 @@ Using [vim-plug](https://github.com/junegunn/vim-plug):
 ```vimscript
 Plug 'JuanS3/specs.nvim'
 ```
-## Usage
-If you are using init.vim instead of init.lua, remember to wrap block below with `lua << EOF` and `EOF`
+
+Using [LazyVim](https://github.com/LazyVim/LazyVim):
 ```lua
-require('specs').setup{ 
-    show_jumps  = true,
-    min_jump = 30,
-    popup = {
-        delay_ms = 0, -- delay before popup displays
-        inc_ms = 10, -- time increments used for fade/resize effects 
-        blend = 10, -- starting blend, between 0-100 (fully transparent), see :h winblend
-        width = 10,
-        winhl = "PMenu",
-        fader = require('specs').linear_fader,
-        resizer = require('specs').shrink_resizer
-    },
-    ignore_filetypes = {},
-    ignore_buftypes = {
-        nofile = true,
-    },
-}
+-- Add this inside your lazy.nvim plugin setup/configuration
+{
+    "JuanS3/specs.nvim",
+    config = function()
+        require('specs').setup({
+            show_jumps = true,
+            min_jump = 30,
+            popup = {
+                delay_ms = 10,
+                inc_ms = 5,
+                blend = 10,
+                width = 20,
+                winhl = "PMenu",
+                fader = require('specs').exp_fader,
+                resizer = require('specs').shrink_resizer,
+            },
+            ignore_filetypes = {},
+            ignore_buftypes = {
+                nofile = true,
+            },
+        })
+    end
+},
+```
+
+## Usage
+
+```lua
+local specs = require('specs')
+
+specs.setup({
+  popup = {
+    inc_ms = 10, -- time increments used for fade/resize effects
+    width = 120,
+    winhl = 'Search',
+  },
+})
+
+vim.api.nvim_set_keymap('n', '<leader>v',
+  ':lua require("specs").show_specs()<CR>',
+  { noremap = true, silent = true }
+)
+
+vim.api.nvim_set_keymap('n', 'n',
+  'n:lua require("specs").show_specs()<CR>',
+  { noremap = true, silent = true }
+)
+vim.api.nvim_set_keymap('n', 'N',
+  'N:lua require("specs").show_specs()<CR>',
+  { noremap = true, silent = true }
+)
 ```
 
 - `:lua require('specs').toggle()`
@@ -64,15 +98,17 @@ Resizers:
 
 You can implement your own custom fader/resizer functions for some pretty cool effects:
 ```lua
-require('specs').setup{ 
+require('specs').setup{
     popup = {
-	-- Simple constant blend effect
+
+        -- Simple constant blend effect
         fader = function(blend, cnt)
             if cnt > 100 then
                 return 80
             else return nil end
         end,
-	-- Growing effect from left to right
+
+        -- Growing effect from left to right
         resizer = function(width, ccol, cnt)
             if width-cnt > 0 then
                 return {width+cnt, ccol}
@@ -84,19 +120,36 @@ require('specs').setup{
 
 ### Keybinds
 
-You can invoke specs from anywhere by using `:lua require('specs').show_specs()`  
+You can invoke specs from anywhere by using `:lua require('specs').show_specs()`
 Add a keybind for this to make it easy to find your cursor at any time.
 
 ```lua
--- Press <C-b> to call specs!
-vim.api.nvim_set_keymap('n', '<C-b>', ':lua require("specs").show_specs()', { noremap = true, silent = true })
+-- Press <leader>v to call specs!
+vim.api.nvim_set_keymap('n', '<leader>v',
+  ':lua require("specs").show_specs()<CR>',
+  { noremap = true, silent = true }
+)
 
 -- You can even bind it to search jumping and more, example:
-vim.api.nvim_set_keymap('n', 'n', 'n:lua require("specs").show_specs()<CR>', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', 'N', 'N:lua require("specs").show_specs()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', 'n',
+  'n:lua require("specs").show_specs()<CR>',
+  { noremap = true, silent = true }
+)
+vim.api.nvim_set_keymap('n', 'N',
+  'N:lua require("specs").show_specs()<CR>',
+  { noremap = true, silent = true }
+)
 
 -- Or maybe you do a lot of screen-casts and want to call attention to a specific line of code:
-vim.api.nvim_set_keymap('n', '<leader>v', ':lua require("specs").show_specs({width = 97, winhl = "Search", delay_ms = 610, inc_ms = 21})<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>v',
+  ':lua require("specs").show_specs({
+    width = 97,
+    winhl = "Search",
+    delay_ms = 610,
+    inc_ms = 21
+  })<CR>',
+  { noremap = true, silent = true }
+)
 ```
 
 ## Planned Features
