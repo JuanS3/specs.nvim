@@ -14,18 +14,18 @@ local au_toggle = true
 
 --- Default configuration options for the popup.
 local DEFAULT_OPTS = {
-  show_jumps       = true,          --- Show popups when cursor moves a certain distance.
-  min_jump         = 30,            --- Minimum cursor movement distance to trigger popup (in characters).
+  show_jumps       = true,            --- Show popups when cursor moves a certain distance.
+  min_jump         = 30,              --- Minimum cursor movement distance to trigger popup (in characters).
   popup            = {
-    delay_ms = 10,                  --- Delay before showing the popup (in milliseconds).
-    inc_ms = 5,                     --- Increment for progressive fade-in (in milliseconds).
-    blend = 10,                     --- Blend value for the popup window (0-100).
-    width = 20,                     --- Width of the popup window (in characters).
-    winhl = 'PMenu',                --- Window highlight group for styling.
-    fader = fader.exp_fader,        --- Fader function for controlling popup transparency.
+    delay_ms = 10,                    --- Delay before showing the popup (in milliseconds).
+    inc_ms = 5,                       --- Increment for progressive fade-in (in milliseconds).
+    blend = 10,                       --- Blend value for the popup window (0-100).
+    width = 20,                       --- Width of the popup window (in characters).
+    winhl = 'PMenu',                  --- Window highlight group for styling.
+    fader = fader.exp_fader,          --- Fader function for controlling popup transparency.
     resizer = resizer.shrink_resizer, --- Resizer function for controlling popup width and position.
   },
-  ignore_filetypes = {},            --- Filetypes to ignore for popup display (empty table by default).
+  ignore_filetypes = {},              --- Filetypes to ignore for popup display (empty table by default).
   --- Buffer types to ignore for popup display.
   ignore_buftypes  = {
     nofile = true,
@@ -147,7 +147,6 @@ function specs.show_specs(popup)
     end
   end))
 end
-
 
 --- Sets up the module with custom options and creates the necessary autocmds
 --- @param user_opts table Custom options
